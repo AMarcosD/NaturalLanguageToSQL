@@ -6,4 +6,4 @@ Se decidió utilizar **LangChain** para generar eficiencia en cada prompt enviad
 Se solicitó el uso de DBT para el procesamiento de los datos almacenados en PostgreSQL.  
   
 A continuación, podrán encontrar el manual de uso para los usuarios que quieran utilizar la solución.  
-[How to Use - StakeHolders Documentatiom](HowToUse.md)
+[How to Use - StakeHolders Documentation](HowToUse.md)
