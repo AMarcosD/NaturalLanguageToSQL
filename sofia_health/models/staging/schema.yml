@@ -1,0 +1,247 @@
+version: 2
+
+sources:
+  - name: public
+    database: sofia_health
+    schema: public
+    tables:
+      - name: patients
+      - name: providers
+      - name: claims
+      - name: claim_providers
+
+models:
+  - name: stg_patients
+    description: "Cleaned version of patient demographic and plan data. Includes identifying info, address, 
+      insurance plan, and enrollment status."
+    columns:
+      - name: patient_id
+        description: "Unique identifier for the patient"
+        tests:
+          - unique
+          - not_null
+
+      - name: first_name
+        description: "Patient's first name"
+
+      - name: last_name
+        description: "Patient's paternal last name"
+
+      - name: maternal_surname
+        description: "Patient's maternal last name"
+
+      - name: date_of_birth
+        description: "Date of birth of the patient"
+
+      - name: gender
+        description: "Gender of the patient"
+        tests:
+          - accepted_values:
+              values: ['M', 'F']
+
+      - name: curp
+        description: "CURP (Mexican national ID)"
+
+      - name: street_address
+        description: "Patient's street address"
+
+      - name: city
+        description: "City of residence"
+
+      - name: state
+        description: "State of residence"
+
+      - name: zip_code
+        description: "Postal code of residence"
+
+      - name: email
+        description: "Contact email address"
+
+      - name: plan_name
+        description: "Name of the health plan"
+
+      - name: plan_code
+        description: "Short code identifying the plan"
+
+      - name: policy_number
+        description: "Insurance policy number"
+
+      - name: group_id
+        description: "Group or employer ID, if applicable"
+
+      - name: enrollment_date
+        description: "Date the patient was enrolled in the plan"
+
+      - name: is_active
+        description: "Boolean flag indicating whether the policy is active"
+
+      - name: annual_deductible
+        description: "Annual deductible limit of the patient’s plan"
+
+      - name: annual_out_of_pocket_max
+        description: "Annual out-of-pocket maximum of the patient’s plan"
+  - name: stg_providers
+    description: "Cleaned and normalized data for healthcare providers, including professionals and clinics.
+      Includes network tier, specialty, and contract information."
+    columns:
+      - name: provider_id
+        description: "Unique identifier for the provider"
+        tests:
+          - unique
+          - not_null
+
+      - name: provider_name
+        description: "Full name or business name of the provider"
+
+      - name: provider_type
+        description: "Type of provider: Individual, Clinic, etc."
+
+      - name: specialty
+        description: "Provider's area of specialization (e.g., Radiology, Cardiology)"
+
+      - name: cedula_profesional
+        description: "Professional license number (if applicable)"
+
+      - name: tax_id
+        description: "Provider’s registered tax ID"
+
+      - name: street_address
+        description: "Street address of the provider"
+
+      - name: city
+        description: "City where the provider is located"
+
+      - name: state
+        description: "State where the provider is located"
+
+      - name: zip_code
+        description: "Postal code for the provider's address"
+
+      - name: phone
+        description: "Phone number of the provider"
+
+      - name: email
+        description: "Contact email for the provider"
+
+      - name: network_tier
+        description: "Tier level of provider in the insurance network"
+
+      - name: contract_start_date
+        description: "Start date of the provider’s contract with the insurer"
+
+      - name: contract_end_date
+        description: "End date of the provider’s contract"
+
+      - name: is_accepting_patients
+        description: "Boolean flag indicating whether the provider is accepting new patients"
+
+      - name: quality_rating
+        description: "Quality score assigned to the provider (e.g., from surveys or metrics)"
+  - name: stg_claims
+    description: "Cleaned claims data from the raw claims table. Includes standard financial fields, 
+      status tracking, in-network indicators, and prior authorization data."
+    columns:
+      - name: claim_id
+        description: "Unique identifier for the insurance claim"
+        tests:
+          - unique
+          - not_null
+
+      - name: patient_id
+        description: "Foreign key to the patient who submitted the claim"
+        tests:
+          - not_null
+          - relationships:
+              to: ref('stg_patients')
+              field: patient_id
+
+      - name: service_date
+        description: "Date when the healthcare service was provided"
+
+      - name: claim_submitted_date
+        description: "Date when the claim was submitted to the insurer"
+
+      - name: claim_type
+        description: "Type of claim, e.g., Office Visit, Imaging, Hospital"
+
+      - name: place_of_service
+        description: "Location where the service was performed, e.g., Home, Hospital"
+
+      - name: diagnosis_codes
+        description: "List of ICD codes related to the diagnosis"
+
+      - name: diagnosis_descriptions
+        description: "Textual descriptions of diagnoses"
+
+      - name: procedure_codes
+        description: "List of CPT/HCPCS codes for procedures billed"
+
+      - name: procedure_descriptions
+        description: "Textual descriptions of the procedures performed"
+
+      - name: billed_amount
+        description: "Total amount billed by the provider for the claim"
+
+      - name: allowed_amount
+        description: "Amount allowed by the insurer based on the plan"
+
+      - name: deductible_amount
+        description: "Amount applied to the patient’s annual deductible"
+
+      - name: coinsurance_amount
+        description: "Amount to be paid by the patient as coinsurance"
+
+      - name: copay_amount
+        description: "Fixed amount paid by the patient as copay"
+
+      - name: insurance_paid_amount
+        description: "Amount paid by the insurance company"
+
+      - name: patient_responsibility
+        description: "Total amount to be paid by the patient"
+
+      - name: claim_status
+        description: "Final status of the claim"
+        tests:
+          - accepted_values:
+              values: ['PAID', 'DENIED', 'ADJUSTED']
+
+      - name: denial_reason
+        description: "Reason for denial if claim was denied"
+
+      - name: is_in_network
+        description: "Boolean flag indicating whether provider was in-network"
+
+      - name: network_tier
+        description: "Tier level of the network provider"
+
+      - name: prior_auth_number
+        description: "Authorization number if prior authorization was required"
+
+      - name: processed_date
+        description: "Date when the claim was fully processed"
+  - name: stg_claim_providers
+    description: "Bridge table connecting claims to one or more providers. Captures the role of each provider 
+      (e.g., Primary, Consulting, Referring) in the context of a claim."
+    columns:
+      - name: claim_id
+        description: "Foreign key to the claim"
+        tests:
+          - not_null
+          - relationships:
+              to: ref('stg_claims')
+              field: claim_id
+
+      - name: provider_id
+        description: "Foreign key to the provider"
+        tests:
+          - not_null
+          - relationships:
+              to: ref('stg_providers')
+              field: provider_id
+
+      - name: provider_role
+        description: "The role of the provider in the context of this claim"
+        tests:
+          - accepted_values:
+              values: ['Primary', 'Consulting', 'Referring']

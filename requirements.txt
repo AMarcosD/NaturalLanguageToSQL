@@ -1,0 +1,3 @@
+# Requisitos para el entorno virtual y uso de dbt
+dbt-core==1.7.11
+dbt-postgres==1.7.11

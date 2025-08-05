@@ -1,0 +1,5 @@
+# Requisitos para el entorno virtual venv_llm (uso con LLM + LangChain)
+langchain==0.2.1
+langchain-google-genai==1.0.10
+google-generativeai==0.7.0
+python-dotenv==1.0.1

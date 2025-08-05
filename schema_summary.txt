@@ -1,0 +1,81 @@
+Tabla: stg_patients
+Descripción: Cleaned version of patient demographic and plan data. Includes identifying info, address, insurance plan, and enrollment status.
+Columnas:
+     - patient_id: Unique identifier for the patient
+     - first_name: Patient's first name
+     - last_name: Patient's paternal last name
+     - maternal_surname: Patient's maternal last name
+     - date_of_birth: Date of birth of the patient
+     - gender: Gender of the patient
+     - curp: CURP (Mexican national ID)
+     - street_address: Patient's street address
+     - city: City of residence
+     - state: State of residence
+     - zip_code: Postal code of residence
+     - email: Contact email address
+     - plan_name: Name of the health plan
+     - plan_code: Short code identifying the plan
+     - policy_number: Insurance policy number
+     - group_id: Group or employer ID, if applicable
+     - enrollment_date: Date the patient was enrolled in the plan
+     - is_active: Boolean flag indicating whether the policy is active
+     - annual_deductible: Annual deductible limit of the patient’s plan
+     - annual_out_of_pocket_max: Annual out-of-pocket maximum of the patient’s plan
+
+Tabla: stg_providers
+Descripción: Cleaned and normalized data for healthcare providers, including professionals and clinics. Includes network tier, specialty, and contract information.
+Columnas:
+     - provider_id: Unique identifier for the provider
+     - provider_name: Full name or business name of the provider
+     - provider_type: Type of provider: Individual, Clinic, etc.
+     - specialty: Provider's area of specialization (e.g., Radiology, Cardiology)
+     - cedula_profesional: Professional license number (if applicable)
+     - tax_id: Provider’s registered tax ID
+     - street_address: Street address of the provider
+     - city: City where the provider is located
+     - state: State where the provider is located
+     - zip_code: Postal code for the provider's address
+     - phone: Phone number of the provider
+     - email: Contact email for the provider
+     - network_tier: Tier level of provider in the insurance network
+     - contract_start_date: Start date of the provider’s contract with the insurer
+     - contract_end_date: End date of the provider’s contract
+     - is_accepting_patients: Boolean flag indicating whether the provider is accepting new patients
+     - quality_rating: Quality score assigned to the provider (e.g., from surveys or metrics)
+
+Tabla: stg_claims
+Descripción: Cleaned claims data from the raw claims table. Includes standard financial fields, status tracking, in-network indicators, and prior authorization data.
+Columnas:
+     - claim_id: Unique identifier for the insurance claim
+     - patient_id: Foreign key to the patient who submitted the claim
+Relación: patient_id → ref('stg_patients').patient_id
+     - service_date: Date when the healthcare service was provided
+     - claim_submitted_date: Date when the claim was submitted to the insurer
+     - claim_type: Type of claim, e.g., Office Visit, Imaging, Hospital
+     - place_of_service: Location where the service was performed, e.g., Home, Hospital
+     - diagnosis_codes: List of ICD codes related to the diagnosis
+     - diagnosis_descriptions: Textual descriptions of diagnoses
+     - procedure_codes: List of CPT/HCPCS codes for procedures billed
+     - procedure_descriptions: Textual descriptions of the procedures performed
+     - billed_amount: Total amount billed by the provider for the claim
+     - allowed_amount: Amount allowed by the insurer based on the plan
+     - deductible_amount: Amount applied to the patient’s annual deductible
+     - coinsurance_amount: Amount to be paid by the patient as coinsurance
+     - copay_amount: Fixed amount paid by the patient as copay
+     - insurance_paid_amount: Amount paid by the insurance company
+     - patient_responsibility: Total amount to be paid by the patient
+     - claim_status: Final status of the claim
+     - denial_reason: Reason for denial if claim was denied
+     - is_in_network: Boolean flag indicating whether provider was in-network
+     - network_tier: Tier level of the network provider
+     - prior_auth_number: Authorization number if prior authorization was required
+     - processed_date: Date when the claim was fully processed
+
+Tabla: stg_claim_providers
+Descripción: Bridge table connecting claims to one or more providers. Captures the role of each provider (e.g., Primary, Consulting, Referring) in the context of a claim.
+Columnas:
+     - claim_id: Foreign key to the claim
+Relación: claim_id → ref('stg_claims').claim_id
+     - provider_id: Foreign key to the provider
+Relación: provider_id → ref('stg_providers').provider_id
+     - provider_role: The role of the provider in the context of this claim
